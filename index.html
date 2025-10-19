@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Tạo Thẻ Sinh Viên - GitHub Pages</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            padding: 30px;
+        }
+        .card-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .student-item {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+        .student-item:hover {
+            border-color: #667eea;
+            background-color: #f8f9fa;
+        }
+        .student-item input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background-color: #e9ecef;
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .card-preview {
+            max-width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .canvas-container {
+            display: none;
+            margin: 20px 0;
+        }
+        .download-section {
+            display: none;
+            margin-top: 30px;
+        }
+        .generated-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        .generated-card img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Toast notification styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast-custom {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        .toast-custom .toast-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .toast-custom .toast-body {
+            font-weight: 500;
+            font-size: 16px;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .copy-success {
+            animation: pulse 0.6s ease-in-out;
+        }
+        
+        /* Button hover effects */
+        .btn-copy {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn-copy:active {
+            transform: translateY(0);
+        }
+        
+        .btn-copy::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-copy:active::before {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="card-header text-center">
+                <h1><i class="fas fa-id-card me-2"></i>Tạo Thẻ Sinh Viên Ver 1</h1>
+                <p class="mb-0">
+                    <i class="fas fa-robot me-1"></i>Trường Đại học Tây Nguyên<br>
+                    <small class="text-light">
+                        <i class="fas fa-check-circle me-1"></i>Tự động tránh trùng lặp |
+                        <i class="fas fa-save me-1"></i>Lưu lịch sử tạo thẻ |
+                        <i class="fas fa-magic me-1"></i>Chỉ cần nhập số lượng
+                    </small>
+                </p>
+            </div>
+
+            <!-- Alert Messages -->
+            <div id="alertContainer"></div>
+
+            <!-- Upload Template Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3><i class="fas fa-upload me-2"></i>Upload Template Thẻ</h3>
+                    <div class="upload-area" onclick="document.getElementById('templateInput').click()">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                        <h5>Kéo thả file template vào đây hoặc click để chọn</h5>
+                        <p class="text-muted">Hỗ trợ: PNG, JPG, JPEG</p>
+                        <input type="file" id="templateInput" accept=".png,.jpg,.jpeg" style="display: none;">
+                        <div id="templatePreview" class="mt-3"></div>
+                    </div>
+                    
+                    <!-- Cấu hình vị trí text -->
+                    <div class="mt-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Cấu Hình Vị Trí Text</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Tỷ lệ ngang (X):</label>
+                                        <input type="number" class="form-control" id="xPosition" value="0.55" step="0.01" min="0" max="1" onchange="updatePosition()">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Tỷ lệ dọc (Y):</label>
+                                        <input type="number" class="form-control" id="yPosition" value="0.475" step="0.001" min="0" max="1" onchange="updatePosition()">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Kích thước font:</label>
+                                        <input type="number" class="form-control" id="fontSize" value="46" onchange="updatePosition()">
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Sử dụng tỷ lệ (0-1) thay vì tọa độ tuyệt đối. Ví dụ: 0.56 = 56% từ trái sang phải
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Selection Section -->
+            <div class="row">
+                <div class="col-12">
+                    <h3><i class="fas fa-magic me-2"></i>Tạo Thẻ Tự Động</h3>
+                    
+                    <!-- Auto Name Generation -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title"><i class="fas fa-robot me-2"></i>Tự Động Tạo Tên Sinh Viên</h6>
+                            <label class="form-label"><i class="fas fa-hashtag me-2"></i>Số lượng thẻ muốn tạo:</label>
+                            <div class="input-group mb-3">
+                                <input type="number" class="form-control" id="quantityInput" value="5" min="1" max="100" onchange="updateCount()">
+                                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('quantityInput').value = parseInt(document.getElementById('quantityInput').value) + 5; updateCount();">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('quantityInput').value = Math.max(1, parseInt(document.getElementById('quantityInput').value) - 5); updateCount();">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-robot me-2"></i>
+                                Script sẽ tự động tạo tên sinh viên Việt Nam ngẫu nhiên, đảm bảo không trùng với các tên đã tạo trước đó.
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="resetUsedStudents()">
+                                        <i class="fas fa-undo me-1"></i>Reset danh sách tên đã tạo
+                                    </button>
+                                </div>
+                                <span class="badge bg-primary" id="selectedCount">5 thẻ sẽ được tạo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-primary btn-lg" id="createBtn" onclick="createCards()" disabled>
+                            <i class="fas fa-magic me-2"></i>Tạo Thẻ Sinh Viên
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Cards Section -->
+            <div class="download-section" id="downloadSection">
+                <h3><i class="fas fa-download me-2"></i>Thẻ Đã Tạo</h3>
+                <div id="generatedCards" class="row">
+                    <!-- Generated cards will be shown here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Canvas for Image Processing -->
+    <canvas id="hiddenCanvas" style="display: none;"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Không cần danh sách sinh viên vì sử dụng tên tự động
+        const allStudents = [];
+
+        // ============ CAU HINH VI TRI ============
+        // Sử dụng tỷ lệ thay vì tọa độ tuyệt đối
+        const R_X = 0.55;       // left X ratio of the name area
+        const R_Y = 0.475;     // top Y ratio of the name area (line with "Họ và tên:")
+        const R_W = 0.52;       // width ratio of the name area
+        const R_H = 0.055;      // height ratio of the name area
+        const FONT_SIZE = 46;   // Kich thuoc font
+
+        let templateImage = null;
+        let usedStudents = new Set(); // Lưu trữ các tên đã được chọn
+
+        // Khởi tạo giao diện
+        function initializeApp() {
+            loadUsedStudents();
+            setupTemplateUpload();
+            updateCount();
+            updateStats();
+        }
+
+        // Load danh sách sinh viên đã sử dụng từ localStorage
+        function loadUsedStudents() {
+            const saved = localStorage.getItem('usedStudents');
+            if (saved) {
+                usedStudents = new Set(JSON.parse(saved));
+            }
+        }
+
+        // Lưu danh sách sinh viên đã sử dụng vào localStorage
+        function saveUsedStudents() {
+            localStorage.setItem('usedStudents', JSON.stringify([...usedStudents]));
+        }
+
+
+        // Setup template upload
+        function setupTemplateUpload() {
+            const input = document.getElementById('templateInput');
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        templateImage = new Image();
+                        templateImage.onload = function() {
+                            showTemplatePreview();
+                        };
+                        templateImage.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Hiển thị preview template
+        function showTemplatePreview() {
+            const preview = document.getElementById('templatePreview');
+            preview.innerHTML = `
+                <div class="text-center">
+                    <img src="${templateImage.src}" class="card-preview" alt="Template Preview">
+                    <p class="text-success mt-2"><i class="fas fa-check-circle me-1"></i>Template đã được tải thành công!</p>
+                    <div class="mt-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="downloadTemplate()">
+                            <i class="fas fa-download me-1"></i>Tải Template
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tải template hiện tại
+        function downloadTemplate() {
+            if (templateImage) {
+                const link = document.createElement('a');
+                link.download = 'template.png';
+                link.href = templateImage.src;
+                link.click();
+            }
+        }
+
+        // Cập nhật vị trí text
+        function updatePosition() {
+            const xRatio = document.getElementById('xPosition').value;
+            const yRatio = document.getElementById('yPosition').value;
+            const fontSize = document.getElementById('fontSize').value;
+            
+            // Cập nhật các hằng số
+            window.R_X = parseFloat(xRatio);
+            window.R_Y = parseFloat(yRatio);
+            window.FONT_SIZE = parseInt(fontSize);
+            
+            showAlert(`Đã cập nhật vị trí: X=${xRatio}, Y=${yRatio}, Font=${fontSize}px`, 'info');
+        }
+
+        // Cập nhật số lượng thẻ sẽ được tạo
+        function updateCount() {
+            const quantity = parseInt(document.getElementById('quantityInput').value) || 0;
+            document.getElementById('selectedCount').textContent = quantity + ' thẻ sẽ được tạo';
+            document.getElementById('createBtn').disabled = quantity === 0 || !templateImage;
+        }
+
+        // Cập nhật thống kê
+        function updateStats() {
+            const usedCount = usedStudents.size;
+            const quantity = parseInt(document.getElementById('quantityInput').value) || 0;
+            
+            // Cập nhật badge hiển thị số tên đã tạo
+            const badge = document.getElementById('selectedCount');
+            badge.textContent = `${quantity} thẻ sẽ được tạo | Đã tạo: ${usedCount} tên`;
+        }
+
+
+        // Reset danh sách sinh viên đã sử dụng
+        function resetUsedStudents() {
+            if (confirm('Bạn có chắc chắn muốn reset danh sách tên đã tạo? Tất cả tên sẽ có thể được tạo lại.')) {
+                usedStudents.clear();
+                saveUsedStudents();
+                updateStats();
+                showAlert('Đã reset danh sách tên đã tạo!', 'success');
+            }
+        }
+
+        // Tạo tên sinh viên ngẫu nhiên (giống như app.py)
+        function generateRandomName() {
+            const familyNames = ["Nguyễn","Trần","Lê","Phạm","Hoàng","Huỳnh","Phan","Vũ","Võ","Đặng",
+                "Bùi","Đỗ","Hồ","Ngô","Dương","Lý","Đinh","Trương","Đoàn","Mai"];
+            const middleNames = ["Thị","Văn","Hữu","Ngọc","Minh","Quang","Gia","Anh","Thuỳ","Phương",
+                "Thanh","Tuấn","Hải","Đình","Tiến","Bảo","Xuân","Kim","Diệu","Trung"];
+            const givenNames = ["An","Anh","Bách","Bảo","Bích","Bình","Châu","Chi","Dũng","Duy",
+                "Giang","Hiếu","Hiền","Hoa","Hoà","Hoài","Hùng","Huy","Huyền","Hương",
+                "Khánh","Khang","Khoa","Kiên","Lan","Linh","Loan","Long","Mai","Minh"];
+            
+            const family = familyNames[Math.floor(Math.random() * familyNames.length)];
+            const middle = middleNames[Math.floor(Math.random() * middleNames.length)];
+            const given = givenNames[Math.floor(Math.random() * givenNames.length)];
+            
+            return `${family} ${middle} ${given}`;
+        }
+
+        // Tạo thẻ sinh viên
+        function createCards() {
+            if (!templateImage) {
+                showAlert('Vui lòng upload template trước!', 'warning');
+                return;
+            }
+
+            // Tạo tên ngẫu nhiên tự động
+            const quantity = parseInt(document.getElementById('quantityInput').value) || 0;
+            if (quantity === 0) {
+                showAlert('Vui lòng nhập số lượng thẻ muốn tạo!', 'warning');
+                return;
+            }
+            
+            // Tạo tên ngẫu nhiên không trùng
+            const selectedStudents = [];
+            const attempts = quantity * 10;
+            
+            for (let i = 0; i < attempts && selectedStudents.length < quantity; i++) {
+                const name = generateRandomName();
+                if (!usedStudents.has(name) && !selectedStudents.includes(name)) {
+                    selectedStudents.push(name);
+                }
+            }
+            
+            if (selectedStudents.length < quantity) {
+                showAlert(`Chỉ có thể tạo ${selectedStudents.length}/${quantity} tên không trùng. Vui lòng thử lại hoặc giảm số lượng.`, 'warning');
+            }
+
+            showAlert(`Đang tạo ${selectedStudents.length} thẻ...`, 'info');
+            
+            // Tạo thẻ cho từng sinh viên
+            const generatedCards = [];
+            selectedStudents.forEach(studentName => {
+                const cardData = createStudentCard(studentName);
+                if (cardData) {
+                    generatedCards.push({
+                        name: studentName,
+                        dataUrl: cardData
+                    });
+                    
+                    // Đánh dấu sinh viên đã được sử dụng
+                    usedStudents.add(studentName);
+                }
+            });
+
+            if (generatedCards.length > 0) {
+                // Lưu danh sách sinh viên đã sử dụng
+                saveUsedStudents();
+                
+                // Cập nhật giao diện
+                updateStats();
+                
+                showGeneratedCards(generatedCards);
+                showAlert(`Đã tạo thành công ${generatedCards.length} thẻ sinh viên!`, 'success');
+            } else {
+                showAlert('Không thể tạo thẻ. Vui lòng kiểm tra template.', 'danger');
+            }
+        }
+
+        // Tạo thẻ cho một sinh viên
+        function createStudentCard(studentName) {
+            try {
+                const canvas = document.getElementById('hiddenCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size to match template
+                canvas.width = templateImage.width;
+                canvas.height = templateImage.height;
+                
+                // Draw template
+                ctx.drawImage(templateImage, 0, 0);
+                
+                // Add text
+                const currentFontSize = window.FONT_SIZE || FONT_SIZE;
+                ctx.font = `${currentFontSize}px Arial`;
+                ctx.fillStyle = '#000000';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                
+                // Position text using ratios (like in app.py)
+                const currentR_X = window.R_X || R_X;
+                const currentR_Y = window.R_Y || R_Y;
+                const x = canvas.width * currentR_X;
+                const y = canvas.height * currentR_Y;
+                
+                ctx.fillText(studentName, x, y);
+                
+                return canvas.toDataURL('image/png');
+            } catch (error) {
+                console.error('Error creating card:', error);
+                return null;
+            }
+        }
+
+        // Hiển thị thẻ đã tạo
+        function showGeneratedCards(cards) {
+            const container = document.getElementById('generatedCards');
+            const section = document.getElementById('downloadSection');
+            
+            container.innerHTML = cards.map(card => `
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="generated-card">
+                        <img src="${card.dataUrl}" alt="${card.name}" class="mb-2">
+                        <h6>${card.name}</h6>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary btn-sm" onclick="downloadCard('${card.dataUrl}', '${card.name}')">
+                                <i class="fas fa-download me-1"></i>Download
+                            </button>
+                            <button class="btn btn-outline-success btn-sm btn-copy" onclick="generateFormScript('${card.name}')">
+                                <i class="fas fa-code me-1"></i>Script Form
+                            </button>
+                            <button class="btn btn-outline-info btn-sm btn-copy" onclick="copySchoolName()">
+                                <i class="fas fa-copy me-1"></i>Copy Tên Trường
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            section.style.display = 'block';
+        }
+
+        // Download thẻ
+        function downloadCard(dataUrl, name) {
+            const link = document.createElement('a');
+            link.download = `card_${name.replace(/\s+/g, '_')}.png`;
+            link.href = dataUrl;
+            link.click();
+        }
+
+        // Tạo script form tự động điền - copy trực tiếp
+        function generateFormScript(studentName) {
+            // Thêm hiệu ứng visual ngay lập tức
+            const button = event.target.closest('button');
+            if (button) {
+                button.classList.add('copy-success');
+                setTimeout(() => button.classList.remove('copy-success'), 600);
+            }
+            
+            // Tách họ và tên
+            const nameParts = studentName.trim().split(' ');
+            const lastName = nameParts[nameParts.length - 1];
+            const firstName = nameParts.slice(0, -1).join(' ');
+            
+            // Tạo email (bỏ dấu, không có dấu chấm)
+            const email = `${studentName.toLowerCase()
+                .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+                .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+                .replace(/[ìíịỉĩ]/g, 'i')
+                .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+                .replace(/[ùúụủũưừứựửữ]/g, 'u')
+                .replace(/[ỳýỵỷỹ]/g, 'y')
+                .replace(/đ/g, 'd')
+                .replace(/\s+/g, '')
+                .replace(/[^a-z0-9]/g, '')}@ttn.edu.vn`;
+            
+            // Tạo script
+            const script = `// Script tự động điền form cho ${studentName}
+(async () => {
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+    const set = async (sel, val) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        const setVal = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+        setVal.call(el, val);
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+        el.dispatchEvent(new Event("blur", { bubbles: true }));
+        await delay(150);
+    };
+    
+    const pasteSchool = async (schoolName) => {
+        console.log("🏫 Bắt đầu chọn trường đại học...");
+        
+        // Tìm trường đại học với nhiều selector khác nhau
+        const schoolSelectors = [
+            'input[placeholder*="Tên Đại học"]',
+            'input[placeholder*="University"]',
+            'input[placeholder*="College"]',
+            'input[name*="university"]',
+            'input[name*="school"]',
+            '#university',
+            '#school',
+            '.university-select',
+            '.school-select',
+            '[data-testid*="university"]',
+            '[data-testid*="school"]'
+        ];
+        
+        let schoolEl = null;
+        for (const selector of schoolSelectors) {
+            schoolEl = document.querySelector(selector);
+            if (schoolEl) {
+                console.log(\`✅ Tìm thấy trường đại học với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        if (!schoolEl) {
+            console.log("❌ Không tìm thấy trường đại học");
+            return;
+        }
+        
+        console.log("🔍 Trường đại học:", schoolEl);
+        
+        // Click vào dropdown để mở danh sách
+        schoolEl.focus();
+        schoolEl.click();
+        console.log("🖱️ Đã click vào dropdown trường đại học");
+        await delay(2000);
+        
+        // Tìm dropdown container
+        const dropdownSelectors = [
+            '[role="listbox"]',
+            '.dropdown-menu',
+            '.select-dropdown',
+            '.ant-select-dropdown',
+            '.rc-select-dropdown',
+            '.el-select-dropdown',
+            '[class*="dropdown"]',
+            '[class*="menu"]',
+            '[class*="select"]'
+        ];
+        
+        let dropdownContainer = null;
+        for (const selector of dropdownSelectors) {
+            dropdownContainer = document.querySelector(selector);
+            if (dropdownContainer) {
+                console.log(\`✅ Tìm thấy dropdown container với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        if (!dropdownContainer) {
+            console.log("⚠️ Không tìm thấy dropdown container, thử tìm options trực tiếp");
+        }
+        
+        // Tìm tất cả options trong dropdown
+        const optionSelectors = [
+            '[role="option"]',
+            '.option',
+            'li[data-value]',
+            'div[data-value]',
+            '.dropdown-item',
+            '.select-option',
+            '.menu-item',
+            '.list-item',
+            'li',
+            'div[class*="option"]',
+            'div[class*="item"]'
+        ];
+        
+        let options = [];
+        for (const selector of optionSelectors) {
+            options = [...document.querySelectorAll(selector)];
+            if (options.length > 0) {
+                console.log(\`✅ Tìm thấy \${options.length} options với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        // Debug: Hiển thị tất cả options
+        console.log("🔍 Tất cả options có sẵn:");
+        options.forEach((option, index) => {
+            const text = option.innerText || option.textContent || '';
+            console.log(\`  \${index + 1}. "\${text}"\`);
+        });
+        
+        // Tìm option Trường Đại học Sài Gòn với nhiều tên khác nhau
+        let targetOption = options.find(o => {
+            const text = o.innerText || o.textContent || '';
+            const lowerText = text.toLowerCase();
+            return lowerText.includes('trường đại học sài gòn') ||
+                   lowerText.includes('sai gon university') ||
+                   lowerText.includes('sgu') ||
+                   lowerText.includes('đại học sài gòn') ||
+                   lowerText.includes('university of saigon') ||
+                   lowerText.includes('saigon university') ||
+                   lowerText.includes('trường đại học sài gòn (district 5)') ||
+                   lowerText.includes('sai gon university (district 5)') ||
+                   lowerText.includes('đại học sài gòn (district 5)');
+        });
+        
+        if (targetOption) {
+            const selectedText = targetOption.innerText || targetOption.textContent || '';
+            console.log(\`✅ Tìm thấy option: "\${selectedText}"\`);
+            
+            // Scroll vào view và click
+            targetOption.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await delay(500);
+            targetOption.click();
+            console.log(\`✅ Đã click vào: "\${selectedText}"\`);
+            
+        } else {
+            console.log("❌ Không tìm thấy Trường Đại học Sài Gòn trong options, thử cuộn và tìm...");
+            
+            // Cuộn trong dropdown để tìm trường
+            if (dropdownContainer) {
+                console.log("🔄 Cuộn trong dropdown container...");
+                
+                // Cuộn xuống để tìm trường
+                for (let i = 0; i < 20; i++) {
+                    dropdownContainer.scrollTop += 100;
+                    await delay(300);
+                    
+                    // Tìm lại options sau khi cuộn
+                    const newOptions = [...document.querySelectorAll('[role="option"], .option, li, div[class*="option"]')];
+                    
+                    targetOption = newOptions.find(o => {
+                        const text = o.innerText || o.textContent || '';
+                        const lowerText = text.toLowerCase();
+                        return lowerText.includes('trường đại học sài gòn') ||
+                               lowerText.includes('sai gon university') ||
+                               lowerText.includes('sgu') ||
+                               lowerText.includes('đại học sài gòn') ||
+                               lowerText.includes('university of saigon');
+                    });
+                    
+                    if (targetOption) {
+                        const selectedText = targetOption.innerText || targetOption.textContent || '';
+                        console.log(\`✅ Tìm thấy sau khi cuộn: "\${selectedText}"\`);
+                        targetOption.click();
+                        console.log(\`✅ Đã click vào: "\${selectedText}"\`);
+                        break;
+                    }
+                }
+            }
+            
+            // Nếu vẫn không tìm thấy, thử tìm tất cả elements
+            if (!targetOption) {
+                console.log("🔍 Tìm tất cả elements có chứa Trường Đại học Sài Gòn...");
+                const allElements = document.querySelectorAll('*');
+                const schoolElements = Array.from(allElements).filter(el => {
+                    const text = el.innerText || el.textContent || '';
+                    return text.toLowerCase().includes('trường đại học sài gòn') ||
+                           text.toLowerCase().includes('sai gon university') ||
+                           text.toLowerCase().includes('sgu') ||
+                           text.toLowerCase().includes('đại học sài gòn') ||
+                           text.toLowerCase().includes('saigon university');
+                });
+                
+                console.log(\`🔍 Tìm thấy \${schoolElements.length} elements có chứa SGU:\`);
+                schoolElements.forEach((el, i) => {
+                    console.log(\`  \${i + 1}. \${el.tagName}: "\${el.innerText || el.textContent}"\`);
+                });
+                
+                if (schoolElements.length > 0) {
+                    console.log("🖱️ Click vào element đầu tiên...");
+                    schoolElements[0].click();
+                } else {
+                    console.log("⚠️ Không tìm thấy Trường Đại học Sài Gòn, thử nhập thủ công...");
+                    
+                    // Thử nhập thủ công vào trường đại học
+                    const schoolInput = document.querySelector('input[placeholder*="Tên Đại học"], input[placeholder*="University"], input[placeholder*="College"]');
+                    if (schoolInput) {
+                        console.log("📝 Nhập thủ công tên trường...");
+                        schoolInput.focus();
+                        schoolInput.value = '';
+                        schoolInput.value = 'Trường Đại học Sài Gòn';
+                        schoolInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        schoolInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        await delay(1000);
+                        
+                        // Kiểm tra xem có bị điền nhầm tên sinh viên không
+                        if (schoolInput.value.includes('${studentName}') || schoolInput.value.includes('${firstName}') || schoolInput.value.includes('${lastName}')) {
+                            console.log("⚠️ Phát hiện tên sinh viên bị điền nhầm vào trường đại học!");
+                            console.log("🔄 Xóa và điền lại tên trường...");
+                            schoolInput.value = '';
+                            schoolInput.value = 'Trường Đại học Sài Gòn';
+                            schoolInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            schoolInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            await delay(1000);
+                        }
+                    }
+                }
+            }
+        }
+        
+        await delay(1000);
+        console.log("📝 Giá trị cuối cùng:", schoolEl.value);
+        console.log("✅ Hoàn thành chọn trường đại học");
+    };
+    
+    const selectCountry = async (countryName) => {
+        console.log("🚀 Bắt đầu chọn quốc gia...");
+        
+        // Tìm trường quốc gia với nhiều selector khác nhau
+        const countrySelectors = [
+            'input[placeholder*="Quốc gia"]',
+            'input[placeholder*="Country"]', 
+            'select[name*="country"]',
+            'input[name*="country"]',
+            '#country',
+            '.country-select',
+            '[data-testid*="country"]'
+        ];
+        
+        let countryEl = null;
+        for (const selector of countrySelectors) {
+            countryEl = document.querySelector(selector);
+            if (countryEl) {
+                console.log(\`✅ Tìm thấy trường quốc gia với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        if (!countryEl) {
+            console.log("❌ Không tìm thấy trường Quốc gia");
+            return;
+        }
+        
+        console.log("🔍 Trường quốc gia:", countryEl);
+        console.log("📝 Giá trị hiện tại:", countryEl.value);
+        
+        // Click vào dropdown để mở danh sách
+        countryEl.focus();
+        countryEl.click();
+        console.log("🖱️ Đã click vào dropdown quốc gia");
+        await delay(2000);
+        
+        // Tìm dropdown container
+        const dropdownSelectors = [
+            '[role="listbox"]',
+            '.dropdown-menu',
+            '.select-dropdown',
+            '.ant-select-dropdown',
+            '.rc-select-dropdown',
+            '.el-select-dropdown',
+            '[class*="dropdown"]',
+            '[class*="menu"]',
+            '[class*="select"]'
+        ];
+        
+        let dropdownContainer = null;
+        for (const selector of dropdownSelectors) {
+            dropdownContainer = document.querySelector(selector);
+            if (dropdownContainer) {
+                console.log(\`✅ Tìm thấy dropdown container với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        if (!dropdownContainer) {
+            console.log("⚠️ Không tìm thấy dropdown container, thử tìm options trực tiếp");
+        }
+        
+        // Tìm tất cả options trong dropdown
+        const optionSelectors = [
+            '[role="option"]',
+            '.option',
+            'li[data-value]',
+            'div[data-value]',
+            '.dropdown-item',
+            '.select-option',
+            '.menu-item',
+            '.list-item',
+            'li',
+            'div[class*="option"]',
+            'div[class*="item"]'
+        ];
+        
+        let options = [];
+        for (const selector of optionSelectors) {
+            options = [...document.querySelectorAll(selector)];
+            if (options.length > 0) {
+                console.log(\`✅ Tìm thấy \${options.length} options với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        // Debug: Hiển thị tất cả options
+        console.log("🔍 Tất cả options có sẵn:");
+        options.forEach((option, index) => {
+            const text = option.innerText || option.textContent || '';
+            console.log(\`  \${index + 1}. "\${text}"\`);
+        });
+        
+        // Tìm option Việt Nam
+        let targetOption = options.find(o => {
+            const text = o.innerText || o.textContent || '';
+            const lowerText = text.toLowerCase();
+            return lowerText === 'việt nam' ||
+                   lowerText.includes('việt nam') ||
+                   lowerText.includes('vietnam') ||
+                   lowerText.includes('viet nam');
+        });
+        
+        if (targetOption) {
+            const selectedText = targetOption.innerText || targetOption.textContent || '';
+            console.log(\`✅ Tìm thấy option: "\${selectedText}"\`);
+            
+            // Scroll vào view và click
+            targetOption.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await delay(500);
+            targetOption.click();
+            console.log(\`✅ Đã click vào: "\${selectedText}"\`);
+            
+        } else {
+            console.log("❌ Không tìm thấy Việt Nam trong options, thử cuộn và tìm...");
+            
+            // Cuộn trong dropdown để tìm Việt Nam
+            if (dropdownContainer) {
+                console.log("🔄 Cuộn trong dropdown container...");
+                
+                // Cuộn xuống để tìm Việt Nam
+                for (let i = 0; i < 10; i++) {
+                    dropdownContainer.scrollTop += 100;
+                    await delay(300);
+                    
+                    // Tìm lại options sau khi cuộn
+                    const newOptions = [...document.querySelectorAll('[role="option"], .option, li, div[class*="option"]')];
+                    
+                    targetOption = newOptions.find(o => {
+                        const text = o.innerText || o.textContent || '';
+                        const lowerText = text.toLowerCase();
+                        return lowerText.includes('việt nam') ||
+                               lowerText.includes('vietnam') ||
+                               lowerText.includes('viet nam');
+                    });
+                    
+                    if (targetOption) {
+                        const selectedText = targetOption.innerText || targetOption.textContent || '';
+                        console.log(\`✅ Tìm thấy sau khi cuộn: "\${selectedText}"\`);
+                        targetOption.click();
+                        console.log(\`✅ Đã click vào: "\${selectedText}"\`);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        await delay(1000);
+        console.log("📝 Giá trị cuối cùng:", countryEl.value);
+        console.log("✅ Hoàn thành chọn quốc gia");
+    };
+    
+    const selectMonth = async () => {
+        const el = document.querySelector('#sid-birthdate__month');
+        if (!el) return;
+        el.focus();
+        el.click();
+        await delay(500);
+        
+        // Tìm và chọn tháng 8 với nhiều tùy chọn
+        const monthOptions = [...document.querySelectorAll('#sid-birthdate__month-menu [role="option"]')];
+        const augustOption = monthOptions.find(o => 
+            o.innerText.includes("Tháng 8") || 
+            o.innerText.toLowerCase().includes("tháng 8") || 
+            o.innerText.toLowerCase().includes("tháng tám") || 
+            o.innerText.toLowerCase().includes("august") ||
+            o.innerText.toLowerCase().startsWith("aug") ||
+            o.innerText.includes("8") ||
+            o.innerText.includes("08")
+        );
+        
+        if (augustOption) {
+            augustOption.click();
+            console.log("✅ Đã chọn Tháng 8");
+        } else {
+            console.log("❌ Không tìm thấy Tháng 8 trong dropdown");
+        }
+        await delay(300);
+    };
+    
+    await selectCountry("Việt Nam");
+    await delay(2000); // Đợi dropdown quốc gia load xong
+    // Bỏ qua chọn trường đại học
+    console.log("⏭️ Bỏ qua chọn trường đại học theo yêu cầu");
+    await selectMonth();
+    
+    // Điền thông tin cá nhân với nhiều selector khác nhau
+    const fillPersonalInfo = async () => {
+        console.log("👤 Bắt đầu điền thông tin cá nhân...");
+        
+        // Tên - Tránh điền nhầm vào trường đại học
+        const firstNameSelectors = [
+            'input[placeholder*="Tên"]:not([placeholder*="Đại học"]):not([placeholder*="University"]):not([placeholder*="College"])',
+            'input[name*="first"]:not([name*="university"]):not([name*="school"])',
+            'input[name*="given"]:not([name*="university"]):not([name*="school"])',
+            '#first-name:not([id*="university"]):not([id*="school"])',
+            '#given-name:not([id*="university"]):not([id*="school"])'
+        ];
+        
+        for (const selector of firstNameSelectors) {
+            const el = document.querySelector(selector);
+            if (el && !el.value && !el.placeholder?.includes('Đại học') && !el.placeholder?.includes('University') && !el.placeholder?.includes('College')) {
+                await set(selector, '${firstName}');
+                console.log(\`✅ Đã điền tên với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        // Họ
+        const lastNameSelectors = [
+            'input[placeholder*="Họ"]',
+            'input[name*="last"]',
+            'input[name*="family"]',
+            '#last-name',
+            '#family-name',
+            'input[type="text"]:nth-of-type(2)'
+        ];
+        
+        for (const selector of lastNameSelectors) {
+            const el = document.querySelector(selector);
+            if (el && !el.value) {
+                await set(selector, '${lastName}');
+                console.log(\`✅ Đã điền họ với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        // Ngày sinh
+        const daySelectors = [
+            'input[placeholder*="N..."]',
+            'input[placeholder*="Ngày"]',
+            'input[name*="day"]',
+            '#day',
+            'input[type="number"]:nth-of-type(1)'
+        ];
+        
+        for (const selector of daySelectors) {
+            const el = document.querySelector(selector);
+            if (el && !el.value) {
+                await set(selector, '18');
+                console.log(\`✅ Đã điền ngày với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        // Năm sinh
+        const yearSelectors = [
+            'input[placeholder*="Năm"]',
+            'input[name*="year"]',
+            '#year',
+            'input[type="number"]:nth-of-type(2)'
+        ];
+        
+        for (const selector of yearSelectors) {
+            const el = document.querySelector(selector);
+            if (el && !el.value) {
+                await set(selector, '1997');
+                console.log(\`✅ Đã điền năm với selector: \${selector}\`);
+                break;
+            }
+        }
+        
+        // Email
+        const emailSelectors = [
+            'input[placeholder*="email"]',
+            'input[type="email"]',
+            'input[name*="email"]',
+            '#email',
+            'input[placeholder*="Địa chỉ email"]'
+        ];
+        
+        for (const selector of emailSelectors) {
+            const el = document.querySelector(selector);
+            if (el && !el.value) {
+                await set(selector, '${email}');
+                console.log(\`✅ Đã điền email với selector: \${selector}\`);
+                break;
+            }
+        }
+    };
+    
+    // Điền thông tin cá nhân
+    await fillPersonalInfo();
+    
+    // Kiểm tra và sửa lỗi điền nhầm tên sinh viên vào trường đại học
+    await delay(1000);
+    console.log("🔍 Kiểm tra xem có bị điền nhầm tên sinh viên vào trường đại học không...");
+    
+    const schoolInput = document.querySelector('input[placeholder*="Tên Đại học"], input[placeholder*="University"], input[placeholder*="College"]');
+    if (schoolInput) {
+        const schoolValue = schoolInput.value;
+        console.log(\`📝 Giá trị hiện tại trong trường đại học: "\${schoolValue}"\`);
+        
+        // Kiểm tra xem có chứa tên sinh viên không
+        if (schoolValue.includes('${studentName}') || 
+            schoolValue.includes('${firstName}') || 
+            schoolValue.includes('${lastName}') ||
+            schoolValue.includes('${studentName.toLowerCase()}') ||
+            schoolValue.includes('${firstName.toLowerCase()}') ||
+            schoolValue.includes('${lastName.toLowerCase()}')) {
+            
+            console.log("⚠️ Phát hiện tên sinh viên bị điền nhầm vào trường đại học!");
+            console.log("🔄 Xóa và để trống trường đại học...");
+            
+            // Xóa nội dung
+            schoolInput.value = '';
+            schoolInput.dispatchEvent(new Event('input', { bubbles: true }));
+            schoolInput.dispatchEvent(new Event('change', { bubbles: true }));
+            schoolInput.dispatchEvent(new Event('blur', { bubbles: true }));
+            
+            await delay(500);
+            console.log("✅ Đã xóa tên sinh viên khỏi trường đại học");
+        } else {
+            console.log("✅ Trường đại học không bị điền nhầm tên sinh viên");
+        }
+    }
+    
+    // Bỏ qua kiểm tra trường đại học
+    console.log("⏭️ Bỏ qua kiểm tra trường đại học theo yêu cầu");
+    
+    // Kiểm tra và xử lý lỗi
+    await delay(1000);
+    console.log("🔍 Kiểm tra lỗi form...");
+    
+    // Kiểm tra lỗi network
+    console.log("🌐 Kiểm tra lỗi network...");
+    const networkErrors = [
+        'ERR_BLOCKED_BY_CLIENT',
+        'ERR_NETWORK_CHANGED',
+        'ERR_INTERNET_DISCONNECTED',
+        'ERR_CONNECTION_REFUSED',
+        'ERR_NAME_NOT_RESOLVED'
+    ];
+    
+    // Kiểm tra console errors
+    const originalError = console.error;
+    let hasNetworkErrors = false;
+    console.error = function(...args) {
+        const errorMessage = args.join(' ');
+        if (networkErrors.some(error => errorMessage.includes(error))) {
+            hasNetworkErrors = true;
+            console.log(\`⚠️ Phát hiện lỗi network: \${errorMessage}\`);
+        }
+        originalError.apply(console, args);
+    };
+    
+    // Tìm các thông báo lỗi form
+    const errorSelectors = [
+        '.error',
+        '.invalid',
+        '.required',
+        '[class*="error"]',
+        '[class*="invalid"]',
+        '[class*="required"]',
+        '.field-error',
+        '.validation-error',
+        '.alert-danger',
+        '.text-danger'
+    ];
+    
+    let hasFormErrors = false;
+    for (const selector of errorSelectors) {
+        const errors = document.querySelectorAll(selector);
+        if (errors.length > 0) {
+            console.log(\`⚠️ Tìm thấy \${errors.length} lỗi form với selector: \${selector}\`);
+            errors.forEach((error, index) => {
+                console.log(\`  Lỗi \${index + 1}: \${error.innerText || error.textContent}\`);
+            });
+            hasFormErrors = true;
+        }
+    }
+    
+    // Xử lý lỗi network
+    if (hasNetworkErrors) {
+        console.log("🌐 Phát hiện lỗi network, có thể do:");
+        console.log("   - Ad blocker chặn request");
+        console.log("   - Extension bảo mật chặn");
+        console.log("   - Cài đặt quyền riêng tư");
+        console.log("   - LaunchDarkly/SheerID bị chặn");
+        console.log("⚠️ Lưu ý: Lỗi này không ảnh hưởng đến việc điền form");
+    }
+    
+    // Xử lý lỗi form
+    if (hasFormErrors) {
+        console.log("❌ Form có lỗi, thử điền lại...");
+        
+        // Thử điền lại các trường bị lỗi
+        await delay(500);
+        await fillPersonalInfo();
+        
+        // Kiểm tra lại
+        await delay(1000);
+        console.log("🔍 Kiểm tra lại sau khi điền lại...");
+    }
+    
+    // Khôi phục console.error
+    console.error = originalError;
+    
+    console.log("✅ Form Google One đã được điền đầy đủ với thông tin của ${studentName} (chưa submit)");
+    
+    // Hiển thị thông báo về form đã được điền
+    console.log("🎓 Form xác minh sinh viên đã được điền thành công!");
+    console.log("📋 Thông tin đã điền:");
+    console.log("   👤 Tên: ${studentName}");
+    console.log("   📧 Email: ${email} (bỏ dấu, không dấu chấm)");
+    console.log("   📅 Ngày sinh: 18/08/1997");
+    console.log("   🌍 Quốc gia: Việt Nam");
+    console.log("   ⏭️ Trường đại học: Bỏ qua (để trống)");
+    console.log("   ✅ Đã kiểm tra không bị điền nhầm tên sinh viên vào trường đại học");
+    console.log("   ⚠️ Lưu ý: Bạn cần điền trường đại học và submit form thủ công!");
+    console.log("");
+    console.log("🔧 Hướng dẫn xử lý lỗi:");
+    console.log("   - Nếu thấy lỗi ERR_BLOCKED_BY_CLIENT: Bình thường, không ảnh hưởng");
+    console.log("   - Nếu form không điền được: Kiểm tra lại các trường");
+    console.log("   - Nếu có lỗi validation: Điền lại thông tin thủ công");
+    console.log("   - Nếu vẫn lỗi: Tắt ad blocker và thử lại");
+    console.log("   - Nếu tên sinh viên bị điền nhầm: Script đã tự động xóa và sửa");
+})();`;
+
+            // Copy script trực tiếp vào clipboard
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(script).then(() => {
+                    showToast('📋 Script đã được copy! Mở F12 → Console → Paste → Enter', 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(script);
+                });
+            } else {
+                fallbackCopyTextToClipboard(script);
+            }
+        }
+
+
+        // Copy tên trường đại học - nhanh và đẹp
+        function copySchoolName() {
+            const schoolName = 'Trường Đại học Tây Nguyên (Đăk Lăk. Điện)';
+            
+            // Thêm hiệu ứng visual ngay lập tức
+            const button = event.target.closest('button');
+            if (button) {
+                button.classList.add('copy-success');
+                setTimeout(() => button.classList.remove('copy-success'), 600);
+            }
+            
+            // Copy nhanh với Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(schoolName).then(() => {
+                    showToast('🎓 Tên trường đã được copy!', 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(schoolName);
+                });
+            } else {
+                fallbackCopyTextToClipboard(schoolName);
+            }
+        }
+
+        // Fallback copy function cho trình duyệt cũ - nhanh hơn
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Tối ưu hóa để copy nhanh hơn
+            textArea.style.position = "fixed";
+            textArea.style.top = "-1000px";
+            textArea.style.left = "-1000px";
+            textArea.style.opacity = "0";
+            textArea.style.pointerEvents = "none";
+            
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('✅ Đã copy thành công!', 'success');
+                } else {
+                    showToast('⚠️ Không thể copy tự động. Vui lòng copy thủ công.', 'warning');
+                }
+            } catch (err) {
+                showToast('⚠️ Không thể copy tự động. Vui lòng copy thủ công.', 'warning');
+            }
+            
+            // Xóa ngay lập tức để không ảnh hưởng UI
+            setTimeout(() => {
+                if (document.body.contains(textArea)) {
+                    document.body.removeChild(textArea);
+                }
+            }, 100);
+        }
+
+        // Toast notification đẹp mắt
+        function showToast(message, type = 'success') {
+            // Tạo container nếu chưa có
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            
+            // Tạo toast
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div class="toast toast-custom" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                        <strong class="me-auto">Thành công!</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // Hiển thị toast
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, {
+                autohide: true,
+                delay: 3000
+            });
+            toast.show();
+            
+            // Tự động xóa sau khi ẩn
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                if (toastElement.parentNode) {
+                    toastElement.parentNode.removeChild(toastElement);
+                }
+            });
+        }
+
+        // Hiển thị thông báo
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            container.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert" id="${alertId}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : type === 'danger' ? 'times-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Khởi tạo khi trang load
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
